@@ -7,4 +7,5 @@ class Evalutor:
         self.model = model
         self.data_source = data_source
     def evaluate(self):
+        """ Passes the data_source through the model and compares output to expected output"""
         pass

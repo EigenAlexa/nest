@@ -9,3 +9,6 @@ class Model:
         pass
     def feed(self, batch):
         pass
+    def save(self, dir='./'):
+        """ Saves the current model """
+        pass
