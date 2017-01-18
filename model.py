@@ -44,14 +44,16 @@ class Model:
         pass
     def test(self, batch_features, batch_labels):
         pass
-    def save(self, dir='./', model_name='model'):
+    def save(self, model_name='model', save_dir='./save/'):
         """ Saves the current model """
-        checkpoint_file = os.path.abspath(dir + model_name)
+        if not tf.gfile.Exists(save_dir):
+            tf.gfile.MakeDirs(save_dir)
+        checkpoint_file = os.path.abspath(save_dir + model_name)
         ckpt = tf.train.get_checkpoint_state(checkpoint_file)
         print("Saving checkpoint to ", checkpoint_file)
-        self.saver.save(self.sess, dir + model_name + '.ckpt',global_step = self.global_step)
-    def load(self, dir='./', model_name='model'):
-        checkpoint_file = os.path.abspath(dir)
+        self.saver.save(self.sess, str(checkpoint_file) + '.ckpt',global_step = self.global_step)
+    def load(self, model_name='model', load_dir='./save/',):
+        checkpoint_file = os.path.abspath(load_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_file)
         print("Loading checkpoint from ", checkpoint_file)
         if ckpt and ckpt.model_checkpoint_path:

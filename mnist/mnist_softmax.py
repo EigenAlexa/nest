@@ -58,7 +58,7 @@ class MNIST_Softmax(Model):
     def test(self, batch_features, batch_labels):
         super().feed(batch_features, batch_labels)
         return self.sess.run(self.accuracy, feed_dict={self.input: batch_features, self.labels: batch_labels})
-    def save(self, dir='./',model_name='mnist'):
-        super().save(dir, model_name)
-    def load(self, dir='./', model_name='mnist'):
-        super().load(dir, model_name)
+    def save(self, model_name='mnist', save_dir='./checkpoints/'):
+        super().save(model_name=model_name, save_dir=save_dir)
+    def load(self, model_name='mnist', load_dir='./checkpoints/'):
+        super().load(model_name=model_name, load_dir=load_dir)
