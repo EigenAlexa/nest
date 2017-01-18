@@ -44,14 +44,16 @@ def main(_):
     for i in range(1000):
         batch_xs, batch_ys = data.get_batch(100)
 
-        acc = model.feed(batch_xs, batch_ys, i)
-
         if i % 50 == 0:
-          print('Iteration {}; Accuracy {}'.format(i, acc))
+            data.set_dataset_type('test')
+            acc = model.test(*data.get_batch(1000))
+            print('Iteration {}; Accuracy {}'.format(i, acc))
+            data.set_dataset_type('train')
+        else:
+            acc = model.feed(batch_xs, batch_ys, i, execution_stats=(i%100 == 99))
         # Test trained model
     print('Testing')
-    data.set_dataset_type('test')
-    print(model.test(*data.get_batch(1000)))
+
     model.save()
     model.close()
 

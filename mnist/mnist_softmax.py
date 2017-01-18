@@ -50,14 +50,22 @@ class MNIST_Softmax(Model):
 
         # setup summary writing
         self.setup_summaries()
-    def feed(self, batch_features, batch_labels, iteration):
+    def feed(self, batch_features, batch_labels, iteration, execution_stats=False):
         super().feed(batch_features, batch_labels)
-        summary, acc = self.sess.run([self.merged, self.train_step], feed_dict={self.input: batch_features, self.labels: batch_labels})
+
+        if execution_stats:
+            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            run_metadata = tf.RunMetadata()
+            summary, _ = self.sess.run([self.merged, self.train_step], feed_dict={self.input: batch_features, self.labels: batch_labels}, options=run_options, run_metadata=run_metadata)
+            self.writer.add_run_metadata(run_metadata, 'step{}'.format(iteration))
+        else:
+            summary, _ = self.sess.run([self.merged, self.train_step], feed_dict={self.input: batch_features, self.labels: batch_labels})
+
         self.writer.add_summary(summary, iteration)#, self.global_step)
-        return acc
     def test(self, batch_features, batch_labels):
         super().feed(batch_features, batch_labels)
-        return self.sess.run(self.accuracy, feed_dict={self.input: batch_features, self.labels: batch_labels})
+        summary, acc = self.sess.run([self.merged, self.accuracy], feed_dict={self.input: batch_features, self.labels: batch_labels})
+        return acc
     def save(self, model_name='mnist', save_dir='./checkpoints/'):
         super().save(model_name=model_name, save_dir=save_dir)
     def load(self, model_name='mnist', load_dir='./checkpoints/'):
