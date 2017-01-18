@@ -28,34 +28,36 @@ import tensorflow as tf
 
 FLAGS = None
 def main(_):
-  # Import data
-  sess = tf.InteractiveSession()
-  print("Loading MNIST")
-  data = MNIST()
-  print("MNIST Loaded")
-  print("Setting up Model")
-  model = MNIST_Softmax(sess)
-  model.load()
+    # Import data
+    sess = tf.InteractiveSession()
+    print("Loading MNIST")
+    data = MNIST()
+    print("MNIST Loaded")
+    print("Setting up Model")
+    model = MNIST_Softmax(sess)
+    model.load()
 
 
-  print("Variable setup")
-  tf.global_variables_initializer().run()
-  # Train
-  for i in range(1000):
-    batch_xs, batch_ys = data.get_batch(100)
+    print("Variable setup")
+    tf.global_variables_initializer().run()
+    # Train
+    for i in range(1000):
+        batch_xs, batch_ys = data.get_batch(100)
 
-    model.feed(batch_xs, batch_ys)
-    if i % 50 == 0:
-      print('Iteration {}'.format(i))
-  # Test trained model
-  print('Testing')
-  data.set_dataset_type('test')
-  print(model.test(*data.get_batch(1000)))
-  model.save()
+        acc = model.feed(batch_xs, batch_ys, i)
+
+        if i % 50 == 0:
+          print('Iteration {}; Accuracy {}'.format(i, acc))
+        # Test trained model
+    print('Testing')
+    data.set_dataset_type('test')
+    print(model.test(*data.get_batch(1000)))
+    model.save()
+    model.close()
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',
                       help='Directory for storing input data')
-  FLAGS, unparsed = parser.parse_known_args()
-  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+    FLAGS, unparsed = parser.parse_known_args()
+    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
