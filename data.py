@@ -5,10 +5,12 @@ class Data:
     def __init__(self, source, is_local=False):
         """ Setups a python interface feedign from the database source """
         pass
-    def next_train_batch(self, batch_size):
-        """ Returns a placeholder for the next training batch """
+    def get_batch(self, batch_size):
+        """ Returns a batch of data. Classes that inherit need to specify whether this data includes labels or not. """
         pass
-    def next_test_batch(self, batch_size):
-        """ Returns a placeholder for the next testing batch """
+    def open(self):
+        """ Opens the data source """
         pass
-    
+    def close(self):
+        """ Closes the data source """
+        pass
