@@ -2,9 +2,9 @@
 import tensorflow as tf
 import os
 
-from enum import Enum
+from enum import IntEnum
 
-class DataType(Enum):
+class DataSetType(IntEnum):
      TRAIN = 0
      TEST = 1
      VALIDATION = 2

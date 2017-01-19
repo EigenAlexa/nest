@@ -1,5 +1,6 @@
 import tensorflow as tf
 from data import Data
+from model import DataSetType
 from tensorflow.examples.tutorials.mnist import input_data
 
 class MNIST(Data):
@@ -19,14 +20,14 @@ class MNIST(Data):
 
     def set_dataset_type(self, dataset_type):
         """ sets the type of dataset used by get_batch"""
-        if dataset_type == "train":
+        if dataset_type == DataSetType.TRAIN:
             self.dataset = self.all_dataset.train
-        elif dataset_type == "test":
+        elif dataset_type == DataSetType.TEST:
             self.dataset  = self.all_dataset.test
-        elif dataset_type == "validation":
+        elif dataset_type == DataSetType.VALIDATION:
             self.dataset = self.all_dataset.validation
         else:
-            raise ValueError("Type only accepts `train, test, or validation`. You input {}".format(dataset_type))
+            raise ValueError("Type only accepts those values listed in the model.DataSetType enum variable. You input {}".format(dataset_type))
     """ No open/close because these operations there is no need for this dataset"""
 
 

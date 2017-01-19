@@ -23,6 +23,7 @@ import argparse
 import sys
 from mnist_softmax import MNIST_Softmax
 from mnist_data import MNIST
+from model import DataSetType
 
 import tensorflow as tf
 
@@ -45,10 +46,10 @@ def main(_):
         batch_xs, batch_ys = data.get_batch(100)
 
         if i % 50 == 0:
-            data.set_dataset_type('test')
+            data.set_dataset_type(DataSetType.TEST)
             acc = model.test(*data.get_batch(1000))
             print('Iteration {}; Accuracy {}'.format(i, acc))
-            data.set_dataset_type('train')
+            data.set_dataset_type(DataSetType.TRAIN)
         else:
             acc = model.feed(batch_xs, batch_ys, i, execution_stats=(i%100 == 99))
         # Test trained model
