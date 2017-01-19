@@ -2,10 +2,16 @@
 import tensorflow as tf
 import os
 
+from enum import Enum
+
+class DataType(Enum):
+     TRAIN = 0
+     TEST = 1
+     VALIDATION = 2
+     
 def variable_summaries(var):
     """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
     # TODO add options to disable certain summaries.
-    # TODO add namescoping for variables
     with tf.name_scope('summaries'):
         mean = tf.reduce_mean(var)
         tf.summary.scalar('mean', mean)
@@ -20,6 +26,7 @@ class Model:
         self.sess = sess
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver(max_to_keep=20)
+        # self.construct() # removing this call because we'll probably want to scope it instead.
     def setup_summaries(self, summary_dir='./summary'):
         # deletes the summary directory if it exists
         if tf.gfile.Exists(summary_dir):
@@ -28,7 +35,9 @@ class Model:
 
         self.merged = tf.summary.merge_all()
         self.writer = tf.train.SummaryWriter(summary_dir,self.sess.graph)
-
+    def construct(self):
+        """Makes the model structure"""
+        pass
     def train(self, data_source):
         """Trains the model"""
         pass

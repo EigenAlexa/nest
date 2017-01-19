@@ -5,8 +5,6 @@ http://tensorflow.org/tutorials/mnist/beginners/index.md
 """
 
 import tensorflow as tf
-import sys
-import os
 
 from model import Model
 
@@ -17,6 +15,16 @@ class MNIST_Softmax(Model):
     def __init__(self, sess):
         super().__init__(sess)
         # setup the softmax graph
+
+        with tf.name_scope('mnist_softmax'):
+            self.construct()
+        # writer for the model.
+        self.saver = tf.train.Saver()
+
+        # setup summary writing
+        self.setup_summaries()
+    def construct(self):
+        super().construct()
         with tf.name_scope('input'):
             self.input = tf.placeholder(tf.float32, [None, 784])
             self.labels = tf.placeholder(tf.float32, [None, 10])
@@ -44,11 +52,6 @@ class MNIST_Softmax(Model):
                 self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
             tf.summary.scalar('accuracy', self.accuracy)
 
-        # writer for the model.
-        self.saver = tf.train.Saver()
-
-        # setup summary writing
-        self.setup_summaries()
     def feed(self, batch_features, batch_labels, iteration, execution_stats=False):
         super().feed(batch_features, batch_labels)
 
