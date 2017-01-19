@@ -7,7 +7,6 @@ http://tensorflow.org/tutorials/mnist/beginners/index.md
 import tensorflow as tf
 import sys
 import os
-sys.path.append(os.path.pardir)
 
 from model import Model
 
