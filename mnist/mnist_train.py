@@ -56,6 +56,7 @@ def main(_):
     print('Testing')
 
     model.save()
+    model.write_spec("this is a dope comment")
     model.close()
 
 if __name__ == '__main__':

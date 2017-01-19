@@ -1,7 +1,7 @@
 """The Data Parent Class that all dataset loaders will inherit from."""
 import tensorflow as tf
 
-class Data:
+class DataSource:
     def __init__(self, source, is_local=False):
         """ Setups a python interface feedign from the database source """
         pass

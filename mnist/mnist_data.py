@@ -1,9 +1,9 @@
 import tensorflow as tf
-from data import Data
+from datasource import DataSource
 from model import DataSetType
 from tensorflow.examples.tutorials.mnist import input_data
 
-class MNIST(Data):
+class MNIST(DataSource):
     """ Loads the mnist dataset in the abstraction format"""
     def __init__(self, source='./MNIST_data'):
         super().__init__(source, is_local=True)

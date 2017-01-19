@@ -20,7 +20,7 @@ class MNIST_Softmax(Model):
             self.construct()
         # writer for the model.
         self.saver = tf.train.Saver()
-
+        self.model_name = 'mnist'
         # setup summary writing
         self.setup_summaries()
     def construct(self):
@@ -68,7 +68,3 @@ class MNIST_Softmax(Model):
         super().feed(batch_features, batch_labels)
         summary, acc = self.sess.run([self.merged, self.accuracy], feed_dict={self.input: batch_features, self.labels: batch_labels})
         return acc
-    def save(self, model_name='mnist', save_dir='./checkpoints/'):
-        super().save(model_name=model_name, save_dir=save_dir)
-    def load(self, model_name='mnist', load_dir='./checkpoints/'):
-        super().load(model_name=model_name, load_dir=load_dir)
