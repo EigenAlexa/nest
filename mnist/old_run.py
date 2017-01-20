@@ -21,8 +21,8 @@ http://tensorflow.org/tutorials/mnist/beginners/index.md
 
 import argparse
 import sys
-from mnist_softmax import MNIST_Softmax
-from mnist_data import MNIST
+from mnist_softmax import MNISTSoftmax
+from mnist_data import MNISTData
 from model import DataSetType
 
 import tensorflow as tf
@@ -35,7 +35,7 @@ def main(_):
     data = MNIST()
     print("MNIST Loaded")
     print("Setting up Model")
-    model = MNIST_Softmax(sess)
+    model = MNISTSoftmax(sess)
     model.load()
 
 

@@ -11,7 +11,7 @@ from model import Model
 flags = tf.app.flags
 
 
-class MNIST_Softmax(Model):
+class MNISTSoftmax(Model):
     def __init__(self, sess):
         super().__init__(sess)
         # setup the softmax graph
