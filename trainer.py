@@ -8,9 +8,10 @@ class Trainer(metaclass=ABCMeta):
     and setting up the evaluation scheme
     """
 
-    def __init__(self, model_class, evaluator, model_store, hyper_queue, max_instances=1):
+    def __init__(self, model_class, data_source, evaluator, model_store, hyper_queue, max_instances=1):
         self.model_class = model_class
         self.evaluator = evaluator
+        self.data_source = data_source
         self.model_store = model_store
         self.hyper_queue = hyper_queue
         self.training_model_ids = set()
@@ -29,6 +30,7 @@ class Trainer(metaclass=ABCMeta):
         # TODO Start training
         # TODO provide some sort of callback that will trigger self.done_training()
         raise NotImplementedError()
+
     def continue_training_instance(self, model_id):
         """
         Loads in a pretrained model from model_id and continues training """
@@ -67,9 +69,10 @@ class Trainer(metaclass=ABCMeta):
         if model_id not in self.training_model_ids:
             raise ValueError("Unexpected model id")
         else:
+            # TODO add the model to the model_store
             self.training_model_ids.remove(model_id)
             if not self.is_still_searching():
-                self.start_new_instance(model_id)
+                self.start_new_instance(self.hyper_queue.pop())
     def stop_training(self, model_id):
         """
         Tells a model with the id to stop training
@@ -87,7 +90,7 @@ class Trainer(metaclass=ABCMeta):
         for model_id in self.training_model_ids:
             self.stop_training(model_id)
 
-    def start(self):
+    def start(self, verbose=False):
         """
         Starts the training and optimization process
         """

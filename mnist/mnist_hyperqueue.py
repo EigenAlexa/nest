@@ -12,7 +12,9 @@ class MNISTHyperQueue(HyperQueue):
         self._queue = [{'lr' : lr} for lr in [0.1, 0.01, 0.001]]
     def pop(self):
         super().pop()
-        return self._queue.pop()
+        elm = self._queue.pop()
+        print("Popping MNIST HypyrQueue", elm)
+        return elm
 
     def has_more(self):
         return len(self._queue) > 0
@@ -27,4 +29,3 @@ class MNISTHyperQueue(HyperQueue):
             self._queue.extend(hyperparams)
         else:
             self._queue.append(hyperparams)
-

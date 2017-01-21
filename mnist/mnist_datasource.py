@@ -3,7 +3,7 @@ from datasource import DataSource
 from model import DataSetType
 from tensorflow.examples.tutorials.mnist import input_data
 
-class MNISTData(DataSource):
+class MNISTDataSource(DataSource):
     """ Loads the mnist dataset in the abstraction format"""
     def __init__(self, source='./MNIST_data'):
         super().__init__(source, is_local=True)
@@ -28,4 +28,4 @@ class MNISTData(DataSource):
             self.dataset = self.all_dataset.validation
         else:
             raise ValueError("Type only accepts those values listed in the model.DataSetType enum variable. You input {}".format(dataset_type))
-    """ No open/close because these operations there is no need for this dataset"""
+    # No open/close because these operations there is no need for this dataset

@@ -12,13 +12,14 @@ flags = tf.app.flags
 
 
 class MNISTSoftmax(Model):
-    def __init__(self, sess):
-        super().__init__(sess)
+    def __init__(self, sess, hyperparameters, name='mnist_softmax'):
+        super().__init__(sess, hyperparameters)
         # setup the softmax graph
 
-        with tf.name_scope('mnist_softmax'):
+        with tf.name_scope(name):
             self.construct()
         # writer for the model.
+
         self.saver = tf.train.Saver()
         self.model_name = 'mnist'
         # setup summary writing

@@ -29,6 +29,8 @@ def variable_summaries(var):
             tf.summary.scalar('min', tf.reduce_min(var))
             tf.summary.histogram('histogram', var)
 class Model:
+    """ The abstract model class"""
+    # TODO move the checkpoint_dir
     def __init__(self, sess, hyperparameters={}, checkpoint_dir='./checkpoints/'):
         self.sess = sess
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
