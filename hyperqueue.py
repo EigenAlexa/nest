@@ -21,6 +21,11 @@ class HyperQueue(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def has_more(self):
+        """ Returns whether the hyperqueue has more parameters"""
+        pass
+
+    @abstractmethod
     def update_priority_fn(self, priority_fn):
         """Updates the priority function that determines the priority used in the queue"""
         # This is particularly useful for Bayesian search that will use the information gained from evaluation to determine what the next step shoudl be
