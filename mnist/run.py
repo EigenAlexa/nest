@@ -3,6 +3,7 @@ from model_store import ModelStore
 from mnist_evaluator import MNISTEvaluator
 from mnist_softmax import MNISTSoftmax
 from mnist_trainer import MNISTTrainer
+from mnist_hyperqueue import MNISTHyperQueue
 
 def main(_):
     print('Loading Model Store')
@@ -12,9 +13,9 @@ def main(_):
     evaluator = MNISTEvaluator(model_store=store)
 
     print("Setting up Training")
-    trainer = MNISTTrainer(model=MNISTSoftmax,
+    trainer = MNISTTrainer(model_class=MNISTSoftmax,
                       evaluator=evaluator,
-                      model_=store)
+                      model_store=store)
 
     print("Start Training")
     trainer.start(verbose=True)
