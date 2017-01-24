@@ -1,0 +1,6 @@
+---
+- name: Print
+  tasks:
+    - name: Echo
+      shell: "echo 'please let this work'"
+
