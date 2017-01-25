@@ -1,2 +1,2 @@
 [local]
-54.89.104.93
+54.89.104.93 ansible_private_key_file=$JENKINS_HOME
