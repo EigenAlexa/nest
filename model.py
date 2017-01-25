@@ -2,6 +2,8 @@
 import tensorflow as tf
 import os
 import json
+import pickle
+import hashlib
 
 from enum import IntEnum
 from abc import ABCMeta
@@ -31,7 +33,7 @@ def variable_summaries(var):
 class Model(metaclass=ABCMeta):
     """ The abstract model class"""
     # TODO move the checkpoint_dir
-    def __init__(self, sess, hyperparameters={}, checkpoint_dir='./checkpoints/'):
+    def __init__(self, sess, hyperparameters={}, save_dir='./run/'):
         self.sess = sess
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver(max_to_keep=20)
@@ -40,25 +42,37 @@ class Model(metaclass=ABCMeta):
         self.hyperparameters = hyperparameters
         # TODO update num_epochs on iterations
         self.num_epochs = 0
-        self.checkpoint_dir = os.path.abspath(checkpoint_dir)
+        self.save_dir = os.path.abspath(save_dir)
+        self.checkpoint_dir = os.path.join(self.save_dir, "checkpoints/")
+        self.summary_dir = os.path.join(self.save_dir, "summary/")
+        self.setup_savedirs()
         # self.construct() # removing this call because we'll probably want to scope it instead.
     def _get_id(self):
         """ 'Private Method' that generates a new unique id for the particular model instance"""
-        # TODO implement
-        self.model_id = 0
-    def setup_summaries(self, summary_dir='./summary'):
+        # TODO Test This
+        m = hashlib.md5()
+        m.update(self.model_name)
+        m.update(pickle.dumps(self.hyperparameters))
+        self.model_id = m.hexdigest()
+    def setup_savedirs(self):
+        if not os.path.isdir(self.save_dir):
+            os.mkdir(self.save_dir)
+        if not os.path.isdir(self.checkpoint_dir):
+            os.mkdir(self.checkpoint_dir)
+
+    def setup_summaries(self):
         # deletes the summary directory if it exists
-        self.summary_dir = os.path.abspath(summary_dir)
         if tf.gfile.Exists(self.summary_dir):
             tf.gfile.DeleteRecursively(self.summary_dir)
         tf.gfile.MakeDirs(self.summary_dir)
 
         self.merged = tf.summary.merge_all()
         self.writer = tf.train.SummaryWriter(self.summary_dir,self.sess.graph)
+
     def construct(self):
         """Makes the model structure"""
         pass
-    def train(self, data_source):
+    def train_batch(self, X, y):
         """Trains the model"""
         pass
     def add_summary(self, variable):
@@ -73,30 +87,18 @@ class Model(metaclass=ABCMeta):
         pass
     def test(self, batch_features, batch_labels):
         pass
-    def save(self, model_name=None, save_dir=None):
+    def save(self):
         """ Saves the current model """
-
-        # Uses object properties in case they don't exist already
-        if not model_name:
-            model_name = self.model_name
-        if not save_dir:
-            save_dir = self.checkpoint_dir
-
-
-        # make directory if it does not yet exist
-        if not tf.gfile.Exists(save_dir):
-            tf.gfile.MakeDirs(save_dir)
-        checkpoint_file = os.path.join(save_dir, model_name)
+        checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
         ckpt = tf.train.get_checkpoint_state(checkpoint_file)
         print("Saving checkpoint to ", checkpoint_file)
         self.saver.save(self.sess, str(checkpoint_file) + '.ckpt',global_step = self.global_step)
-    def load(self, load_dir=None):
+    def load(self):
         """ Loads the model """
         # TODO add support for spec
-        if not load_dir:
-            load_dir = self.checkpoint_dir
-        ckpt = tf.train.get_checkpoint_state(load_dir)
-        print("Loading checkpoint from ", load_dir)
+        checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
+        ckpt = tf.train.get_checkpoint_state(checkpoint_file)
+        print("Loading checkpoint from ", checkpoint_file)
         if ckpt and ckpt.model_checkpoint_path:
             self.saver.restore(self.sess, ckpt.model_checkpoint_path)
         else:
