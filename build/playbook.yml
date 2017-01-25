@@ -4,5 +4,5 @@
   tasks:
     - name: Echo
       shell: "echo 'please let this work'"
-      register: {{echo}}
+      register: "{{echo}}"
     - debug: var=echo
