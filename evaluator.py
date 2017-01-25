@@ -1,11 +1,18 @@
 """ The evaluation framework that all evaluation frameworks will inherit from """
 import tensorflow as tf
+from abc import ABCMeta, abstractmethod
+class Evaluator(metaclass=ABCMeta):
 
-class Evalutor:
-    def __init__(self, model, data_source):
+    def __init__(self, source, model_store):
         """Setup the evaluator"""
-        self.model = model
-        self.data_source = data_source
-    def evaluate(self):
-        """ Passes the data_source through the model and compares output to expected output"""
+        self.data_source = source
+
+    @abstractmethod
+    def evaluate(self, model):
+        """
+        Passes the data_source through the model and
+        compares output to expected output
+        :param model: The model to be evaluated
+        :return:
+        """
         pass
