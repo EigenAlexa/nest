@@ -1,4 +1,5 @@
 import os
+import shutil
 
 class ModelStore:
     """
@@ -40,7 +41,7 @@ class ModelStore:
             raise NotImplementedError()
         else:
             # TODO read the directory
-            ids = [f.path for f in os.scandir(self.path_to_fs) if f.is_dir()]
+            ids = [f.name for f in os.scandir(self.path_to_fs) if f.is_dir()]
             return ids
 
 
@@ -52,20 +53,35 @@ class ModelStore:
         """
         return id in self.list_ids()
 
-    def get_model(self, id):
+    def load_model(self, id, load_dir="/run/"):
         """
         Returns a model that corresponds to an id; otherwise returns false
         :param id: The id of the model to check
         :return: Model reference
         """
         if self.has_model(id):
-            raise NotImplementedError()
+            try:
+                if os.path.isdir(load_dir) and os.listdir(load_dir):
+                    self.save_current_model(id, load_dir)
+                    shutil.rmtree(load_dir)
+                elif os.path.isdir(load_dir):
+                    shutil.rmtree(load_dir)
+                shutil.copytree(os.path.join(self.path_to_fs, id), load_dir)
+                return True
+            except IOError as e:
+                print(e)
         else:
             raise FileNotFoundError("Model with id {} could not be found".format(id))
 
-    def add_model(self, model):
+    def save_current_model(self, id, model_dir="/run/"):
         """
         Takes in a trained model, saves the model, and moves summaries,
         checkpoints, and spec to the model file_store.
         """
-        raise NotImplementedError()
+        if os.path.isdir(model_dir):
+            if os.path.isdir(os.path.join(self.path_to_fs, id)):
+                shutil.rmtree(os.path.join(self.path_to_fs, id))
+            shutil.copytree(model_dir, os.path.join(self.path_to_fs, id))
+            return True
+        else:
+            raise FileNotFoundError("Model Directory, {}, does not exist".format(model_dir))
