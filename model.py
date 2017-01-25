@@ -4,7 +4,7 @@ import os
 import json
 
 from enum import IntEnum
-
+from abc import ABCMeta
 
 spec_file_ext = '.spec'
 
@@ -28,7 +28,7 @@ def variable_summaries(var):
             tf.summary.scalar('max', tf.reduce_max(var))
             tf.summary.scalar('min', tf.reduce_min(var))
             tf.summary.histogram('histogram', var)
-class Model:
+class Model(metaclass=ABCMeta):
     """ The abstract model class"""
     # TODO move the checkpoint_dir
     def __init__(self, sess, hyperparameters={}, checkpoint_dir='./checkpoints/'):
