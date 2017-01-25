@@ -1,7 +1,6 @@
 import tensorflow as tf
-from abc import ABCMeta, abstractmethod
 
-class Trainer(metaclass=ABCMeta):
+class Trainer:
     """
     The class that handles training of a specific model.
     Handle hyperparameter search, model instance distribution,
