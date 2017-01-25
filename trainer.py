@@ -21,14 +21,31 @@ class Trainer:
         Takes in a set of hyperparameters, initializes  and starts training a new instance of model_class
         :return: model_id for new instance
         """
-        id = 0 # TODO acutally get the id
-        self.training_model_ids.add(id)
+        with tf.Session() as sess:
+            self.cur_model = self.model_class(sess, hyperparameters)
+            id = self.cur_model.model_id
+            assert id not in self.training_model_ids, "Duplicate id found, aborting"
+            self.training_model_ids.add(id)
+            tf.global_variables_initializer().run()
+            if "num_epochs" not in hyperparameters:
+                num_epochs = 10
+            else:
+                num_epochs = hyperparameters['num_epochs']
+            if "batch_size" not in hyperparameters:
+                batch_size = 64
+            else:
+                batch_size = hyperparameters['batch_size']
+
+            for epoch in range(num_epochs):
+                for batch in range(self.data_source.get_num_batches(batch_size)):
+                    batchx, batchy = self.data_source.get_batch(batch_size)
+                    self.cur_model.train_batch(batchx, batchy)
+            self.done_training(id) 
         # TODO Allocate the resources for the model
         # TODO Create the model with the set of hyperparameters
         # TODO Setup the datasource with the model
         # TODO Start training
         # TODO provide some sort of callback that will trigger self.done_training()
-        raise NotImplementedError()
 
     def continue_training_instance(self, model_id):
         """
@@ -69,6 +86,8 @@ class Trainer:
             raise ValueError("Unexpected model id")
         else:
             # TODO add the model to the model_store
+            self.cur_model.save()
+            self.model_store.save_current_model(model_id, self.cur_model.save_dir)
             self.training_model_ids.remove(model_id)
             if not self.is_still_searching():
                 self.start_new_instance(self.hyper_queue.pop())
