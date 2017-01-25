@@ -1,0 +1,50 @@
+---
+- name: Source Amazon keys
+  shell: source ~/secret.keys
+- name: Clean build directory
+  file:
+    dest: ~/build/
+    state: absent
+- name: Add build directory
+  file:
+    dest: ~/build
+    state: directory
+:w
+- name: Copy build files over
+  copy:
+    dest: ~/build/{{item}}
+    src: "{{playbook_dir}}/nest/{{item}}"
+  with_items:
+
+- name: Start GPU instance for testing on
+  ec2:
+    key_name: jenkins
+    instance_type: g2.2xlarge
+    image: ami-5ac2cd4d
+    wait: yes
+    count: 1
+    assign_public_ip: yes
+    region: us-east-1
+  register: ec2
+
+- name: Add new GPU instance to hosts
+  add_host:
+    hostname: "{{item.public_ip}}"
+    groupname: gpu
+  with_items: "{{ec2.instances}}"
+
+- name: Wait for SSH
+  wait_for:
+    host: "{{item.public_dns_name}}"
+    port: 22
+    delay: 60
+    timeout: 320
+    state: started
+  with_items: "{{ec2.instances}}"
+
+- name: Terminate Instances
+  ec2:
+    state: absent
+    instance_ids: "{{ec2.instance_ids}}"
+    
+        
