@@ -65,9 +65,9 @@ class Model(metaclass=ABCMeta):
         if tf.gfile.Exists(self.summary_dir):
             tf.gfile.DeleteRecursively(self.summary_dir)
         tf.gfile.MakeDirs(self.summary_dir)
-
-        self.merged = tf.summary.merge_all()
-        self.writer = tf.train.SummaryWriter(self.summary_dir,self.sess.graph)
+        if self.sess:
+            self.merged = tf.summary.merge_all()
+            self.writer = tf.train.SummaryWriter(self.summary_dir,self.sess.graph)
 
     def construct(self):
         """Makes the model structure"""
@@ -91,18 +91,21 @@ class Model(metaclass=ABCMeta):
         """ Saves the current model """
         checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
         ckpt = tf.train.get_checkpoint_state(checkpoint_file)
-        print("Saving checkpoint to ", checkpoint_file)
-        self.saver.save(self.sess, str(checkpoint_file) + '.ckpt',global_step = self.global_step)
+        if self.sess:
+            print("Saving checkpoint to ", checkpoint_file)
+            self.saver.save(self.sess, str(checkpoint_file) + '.ckpt',global_step = self.global_step)
+            self.sess
     def load(self):
         """ Loads the model """
         # TODO add support for spec
         checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
         ckpt = tf.train.get_checkpoint_state(checkpoint_file)
         print("Loading checkpoint from ", checkpoint_file)
-        if ckpt and ckpt.model_checkpoint_path:
-            self.saver.restore(self.sess, ckpt.model_checkpoint_path)
-        else:
-            print('No saved file, starting with freshly initialized parameters')
+        if self.sess:
+            if ckpt and ckpt.model_checkpoint_path:
+                self.saver.restore(self.sess, ckpt.model_checkpoint_path)
+            else:
+                print('No saved file, starting with freshly initialized parameters')
     def close(self):
         """ Run at the end of the file."""
         self.writer.close()
