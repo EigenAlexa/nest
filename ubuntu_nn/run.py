@@ -1,4 +1,6 @@
 from nn_model import NNModel
+from pymongo import MongoClient
+
 def main():
     data = [(
          u"I'm using /set irc_conf_mode 1 in xchat but I still see notifications from people entering and exiting shouldn't those notifications be supressed ?",
@@ -29,6 +31,13 @@ def main():
          u'go in synaptic and install every single gstreamer0.10 packages there is a #amarok , maybe they know'), (
          u'Hey, will there by any chance be a Windows Ubuntu Installer for 11.10 by any chance? When it does come out? I want to get a friend into Ubuntu.',
          u'wubi?')] # TODO replace with mongo iterator
+
+    def generator():
+        c = MongoClient('10.0.2.32')
+        for x in c['ubuntu-corpus'].dialogs.find():
+            yield x
+    data = generator()    
+    
     hyperparams = {
         'dimension' :  100,
         'window':  3,
