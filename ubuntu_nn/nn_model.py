@@ -60,6 +60,7 @@ class NNModel(Model):
     def setup_nn(self):
         """ Sets up nearest neighbors """
         # TODO add bits of entropy as hyperparameters
+        print("Setup NN")
         rbp = RandomBinaryProjections('rbp', 10)
         self.nn_engine = Engine(self.dimension, lshashes=[rbp])
 

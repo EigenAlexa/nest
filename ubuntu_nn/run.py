@@ -30,8 +30,8 @@ def main():
          u'Hey, will there by any chance be a Windows Ubuntu Installer for 11.10 by any chance? When it does come out? I want to get a friend into Ubuntu.',
          u'wubi?')] # TODO replace with mongo iterator
     hyperparams = {
-        'dimension' :  10,
-        'window':  300,
+        'dimension' :  100,
+        'window':  3,
         'min_count': 1,
         'workers': 4
     }
