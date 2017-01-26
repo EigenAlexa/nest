@@ -38,8 +38,8 @@ class Model(metaclass=ABCMeta):
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver(max_to_keep=20)
         self.model_name = "model"
-        self._get_id()
         self.hyperparameters = hyperparameters
+        self._get_id()
         # TODO update num_epochs on iterations
         self.num_epochs = 0
         self.save_dir = os.path.abspath(save_dir)
@@ -51,7 +51,7 @@ class Model(metaclass=ABCMeta):
         """ 'Private Method' that generates a new unique id for the particular model instance"""
         # TODO Test This
         m = hashlib.md5()
-        m.update(self.model_name)
+        m.update(self.model_name.encode('utf-8' ))
         m.update(pickle.dumps(self.hyperparameters))
         self.model_id = m.hexdigest()
     def setup_savedirs(self):
