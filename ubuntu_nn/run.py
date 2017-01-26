@@ -47,7 +47,7 @@ def main():
     # TODO check if model already exists and load it
     print("Setting up embedding")
     model = NNModel(sess=None,
-                    store_sentences=True,
+                    store_sentences=False,
                     hyperparameters=hyperparams)
     print("Train model")
     model.train(conv_pairs=data)

@@ -15,7 +15,7 @@ def hyperdefault(name, default, hyper_dict):
     return hyper_dict[name]
 def make_doc_tuple(conv_pair, i):
     analyzedDocument = namedtuple("AnalyzedDocument", "words tags")
-    words = conv_pair[0].lower().split()
+    words = conv_pair['A'].lower().split()
     tags = [i]
     return analyzedDocument(words, tags)
 def prepare_convpairs(conv_gen, start_i=0):
