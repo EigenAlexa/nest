@@ -28,7 +28,7 @@ def prepare_convpairs(conv_gen, start_i=0):
     for i, text in enumerate(conv_gen):
         yield make_doc_tuple(text, i + start_i)
 class NNModel(Model):
-    def __init__(self, sess, conv_pairs, store_sentences=True, hyperparameters={}, save_dir='./run/'):
+    def __init__(self, sess, store_sentences=True, hyperparameters={}, save_dir='./run/'):
         """
         :param sess: tensorflow session to be passed in
         :param conv_pairs: Iterable of conversation pairs
@@ -40,7 +40,6 @@ class NNModel(Model):
         :param save_dir:
         """
         super().__init__(sess, hyperparameters, save_dir)
-        self.conv_pairs = conv_pairs
         self.store_sentences = store_sentences
         self.construct()
     def setup_doc2vec(self):
@@ -50,13 +49,12 @@ class NNModel(Model):
         :param hyperparameters: Hyperparameters of the model
         """
         self.dimension = hyperdefault("dimension", 100, self.hyperparameters)
-        window = hyperdefault("window", 300, self.hyperparameters)
-        min_count = hyperdefault("min_count", 1, self.hyperparameters)
-        workers = hyperdefault("workers", 4, self.hyperparameters)
-        processed_convs = prepare_convpairs(self.conv_pairs)
-        self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=window, min_count=min_count,
-                               workers=workers)
-        self.vecs = self.doc2vec.docvecs
+        self.window = hyperdefault("window", 300, self.hyperparameters)
+        self.min_count = hyperdefault("min_count", 1, self.hyperparameters)
+        self.workers = hyperdefault("workers", 4, self.hyperparameters)
+        self.vecs = None
+        self.conv_pairs = None
+
     def setup_nn(self):
         """ Sets up nearest neighbors """
         # TODO add bits of entropy as hyperparameters
@@ -83,8 +81,16 @@ class NNModel(Model):
     def feed(self, batch_features, batch_labels):
         super().feed(batch_features, batch_labels)
         # return
+    def is_trained(self):
+        """ Returns whether the model has been trained yet"""
+        return self.conv_pairs is not None and self.vecs is not None
+    def check_trained(self):
+        """ Verifies that the model has been trained or not and throws an error if not"""
+        if not self.is_trained():
+            raise RuntimeError("You need to train the model first")
     def get_conv_pair(self, id):
         """ Returns the conversation pair tupe corresponding to ID"""
+        self.check_trained()
         return self.conv_pairs[id]
     def get_train_response(self, id):
         """ Returns the response to the conversation """
@@ -95,11 +101,15 @@ class NNModel(Model):
         # TODO figure out if this is the right format
         return neighbors#[0][1]
 
+    def train(self, conv_pairs):
+        super().train_batch(conv_pairs, None)
+        self.conv_pairs = conv_pairs
+        processed_convs = prepare_convpairs(self.conv_pairs)
+        self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
+                               workers=self.workers)
+        self.vecs = self.doc2vec.docvecs
+        self.setup_nn()
 
-    def train_batch(self, X, y):
-        super().train_batch(X, y)
-        # Doesn't really do anything because training should be done initially
-        pass
 
     def close(self):
         super().close()
@@ -112,11 +122,11 @@ class NNModel(Model):
 
     def load(self):
         super().load()
+        self.doc2vec.load(os.path.join(self.save_dir, 'doc2vec.bin'))
 
     def construct(self):
         super().construct()
         self.setup_doc2vec()
-        self.setup_nn()
 
     def test(self, batch_features, batch_labels):
         super().test(batch_features, batch_labels)

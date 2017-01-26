@@ -38,9 +38,10 @@ def main():
     # TODO check if model already exists and load it
     print("Setting up embedding")
     model = NNModel(sess=None,
-                    conv_pairs=data,
                     store_sentences=True,
                     hyperparameters=hyperparams)
+    print("Train model")
+    model.train(conv_pairs=data)
     print("Saving model")
     model.save()
     print("START TESTING")
