@@ -4,6 +4,7 @@ import os
 from collections import namedtuple
 from nearpy import Engine
 from nearpy.hashes import RandomBinaryProjections
+import json
 
 def hyperdefault(name, default, hyper_dict):
     """
@@ -27,6 +28,9 @@ def prepare_convpairs(conv_gen, start_i=0):
     """
     for i, text in enumerate(conv_gen):
         yield make_doc_tuple(text, i + start_i)
+def get_nearpy_id(response):
+    # response = json.dumps(response)
+    return response['id']
 class NNModel(Model):
     def __init__(self, sess, source, store_sentences=True, hyperparameters={}, save_dir='./run/'):
         """
@@ -62,11 +66,9 @@ class NNModel(Model):
         rbp = RandomBinaryProjections('rbp', 10)
         self.nn_engine = Engine(self.dimension, lshashes=[rbp])
 
-        for i, vec in enumerate(self.vecs):
-            if self.store_sentences:
-                self.nn_engine.store_vector(vec, self.get_train_response(i))
-            else:
-                self.nn_engine.store_vector(vec, i)
+        for _, idx in self.source.get_batch:
+            vec = self._get_vector(idx)
+            self.nn_engine.store_vector(vec, {'id': idx})
 
     def _get_neighbors(self, vec):
         return self.nn_engine.neighbours(vec)
@@ -76,6 +78,8 @@ class NNModel(Model):
         for s in string_list:
             vecs.append(self._make_vector(s))
         return vecs
+    def _get_vector(self, idx):
+        return self.doc2vec.docvecs[idx]
     def _make_vector(self, s):
         return self.doc2vec.infer_vector(s)
     def feed(self, batch_features, batch_labels):
@@ -83,7 +87,7 @@ class NNModel(Model):
         # return
     def is_trained(self):
         """ Returns whether the model has been trained yet"""
-        return self.conv_pairs is not None and self.vecs is not None
+        return self.vecs is not None
     def check_trained(self):
         """ Verifies that the model has been trained or not and throws an error if not"""
         if not self.is_trained():
@@ -91,26 +95,31 @@ class NNModel(Model):
     def get_conv_pair(self, id):
         """ Returns the conversation pair tupe corresponding to ID"""
         self.check_trained()
-        return self.conv_pairs[id]
-    def get_train_response(self, id):
+        return self.source.get_convpair(id)
+    def get_data_response(self, id):
         """ Returns the response to the conversation """
         return self.source.get_response(id)
     def get_response(self, prev):
         vec = self._make_vector(prev)
         neighbors = self._get_neighbors(vec)
-        # TODO figure out if this is the right format
-        return neighbors#[0][1]
+        if neighbors:
+            res =  get_nearpy_id(neighbors[0][1])
+        else:
+            res = "588a865fc280444b37064f11"
+        return self.get_data_response(id)
 
     def train(self):
         super().train_batch(None, None)
-        self.conv_pairs = conv_pairs
-        processed_convs = prepare_convpairs(self.conv_pairs)
+
+        processed_convs = self.get_convpairs()
         self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
                                workers=self.workers)
         self.vecs = self.doc2vec.docvecs
         self.setup_nn()
 
-
+    def get_convpairs(self):
+        for text, id in self.source.get_batch():
+            yield make_doc_tuple(text, id)
     def close(self):
         super().close()
 

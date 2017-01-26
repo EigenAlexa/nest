@@ -1,10 +1,7 @@
 from datasource import DataSource
 from pymongo import MongoClient
+import bson
 
-def generator(iter):
-    for x in iter:
-        yield x
-def get_id
 class NNData(DataSource):
     def __init__(self, source='10.0.2.32', is_local=False):
         """ source is mongo db ip"""
@@ -12,16 +9,19 @@ class NNData(DataSource):
         self.client = MongoClient(source)
         self.gen = self.client['ubuntu-corpus'].dialogs.find()
 
-    def get_batch(self, batch_size):
+    def get_batch(self, batch_size=None):
         super().get_batch(batch_size)
-        next_elm = self.gen.next()
-        personA = next_elm['A']
-        id = next_elm['_id']
-        return personA, id
+        for next_elm in self.gen:
+            personA = next_elm['A']
+            id = next_elm['_id']
+
+            yield personA, str(id)
 
     def get_response(self, idx):
         """ Returns the response from mongo db at index"""
-        next_elm = self.client['ubuntu-corpus'].dialogs.find({'_id' : idx}).next()
+        next_elm = self.get_convpair(idx)
         personB = next_elm['B']
         return personB
-    def get_id_gen(self):
+    def get_convpair(self, idx):
+        return self.client['ubuntu-corpus'].dialogs.find({'_id' : bson.objectid.ObjectId(idx)}).next()
+    def get_ids(self):
