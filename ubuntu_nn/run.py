@@ -1,5 +1,5 @@
 from nn_model import NNModel
-from pymongo import MongoClient
+from nn_data import NNData
 
 def main():
     data = [(
@@ -32,12 +32,8 @@ def main():
          u'Hey, will there by any chance be a Windows Ubuntu Installer for 11.10 by any chance? When it does come out? I want to get a friend into Ubuntu.',
          u'wubi?')] # TODO replace with mongo iterator
 
-    def generator():
-        c = MongoClient('10.0.2.32')
-        for x in c['ubuntu-corpus'].dialogs.find():
-            yield x
-    data = generator()    
-    
+
+    data = NNData('10.0.2.32')
     hyperparams = {
         'dimension' :  100,
         'window':  3,
@@ -47,6 +43,7 @@ def main():
     # TODO check if model already exists and load it
     print("Setting up embedding")
     model = NNModel(sess=None,
+                    source=data,
                     store_sentences=False,
                     hyperparameters=hyperparams)
     print("Train model")

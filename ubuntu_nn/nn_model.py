@@ -28,7 +28,7 @@ def prepare_convpairs(conv_gen, start_i=0):
     for i, text in enumerate(conv_gen):
         yield make_doc_tuple(text, i + start_i)
 class NNModel(Model):
-    def __init__(self, sess, store_sentences=True, hyperparameters={}, save_dir='./run/'):
+    def __init__(self, sess, source, store_sentences=True, hyperparameters={}, save_dir='./run/'):
         """
         :param sess: tensorflow session to be passed in
         :param conv_pairs: Iterable of conversation pairs
@@ -41,6 +41,7 @@ class NNModel(Model):
         """
         super().__init__(sess, hyperparameters, save_dir)
         self.store_sentences = store_sentences
+        self.source = source
         self.construct()
     def setup_doc2vec(self):
         """
@@ -53,7 +54,6 @@ class NNModel(Model):
         self.min_count = hyperdefault("min_count", 1, self.hyperparameters)
         self.workers = hyperdefault("workers", 4, self.hyperparameters)
         self.vecs = None
-        self.conv_pairs = None
 
     def setup_nn(self):
         """ Sets up nearest neighbors """
@@ -94,15 +94,15 @@ class NNModel(Model):
         return self.conv_pairs[id]
     def get_train_response(self, id):
         """ Returns the response to the conversation """
-        return self.get_conv_pair(id)[1]
+        return self.source.get_response(id)
     def get_response(self, prev):
         vec = self._make_vector(prev)
         neighbors = self._get_neighbors(vec)
         # TODO figure out if this is the right format
         return neighbors#[0][1]
 
-    def train(self, conv_pairs):
-        super().train_batch(conv_pairs, None)
+    def train(self):
+        super().train_batch(None, None)
         self.conv_pairs = conv_pairs
         processed_convs = prepare_convpairs(self.conv_pairs)
         self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
