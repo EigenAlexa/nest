@@ -46,6 +46,7 @@ class NNModel(Model):
         super().__init__(sess, hyperparameters, save_dir)
         self.store_sentences = store_sentences
         self.source = source
+        self.save_file = os.path.join(self.save_dir, 'doc2vec.bin')
         self.construct()
     def setup_doc2vec(self):
         """
@@ -58,6 +59,8 @@ class NNModel(Model):
         self.min_count = hyperdefault("min_count", 1, self.hyperparameters)
         self.workers = hyperdefault("workers", 4, self.hyperparameters)
         self.vecs = None
+        self.doc2vec = Doc2Vec(size=self.dimension, window=self.window, min_count=self.min_count,
+                               workers=self.workers)
 
     def setup_nn(self):
         """ Sets up nearest neighbors """
@@ -112,8 +115,9 @@ class NNModel(Model):
         super().train_batch(None, None)
 
         processed_convs = self.get_convpairs()
-        self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
-                               workers=self.workers)
+        # self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
+        #                        workers=self.workers)
+        self.doc2vec.train(processed_convs)
         self.vecs = self.doc2vec.docvecs
         self.setup_nn()
 
@@ -126,16 +130,19 @@ class NNModel(Model):
     def save(self):
         """ Saves the doc2vec embedding """
         super().save()
-        self.doc2vec.save(os.path.join(self.save_dir,'doc2vec.bin'))
+        self.doc2vec.save(self.save_file)
 
 
     def load(self):
         super().load()
-        self.doc2vec.load(os.path.join(self.save_dir, 'doc2vec.bin'))
+        self.doc2vec.load()
 
     def construct(self):
         super().construct()
         self.setup_doc2vec()
+        # TODO if file exists just load it
+        if os.path.isfile(self.save_file):
+            self.load()
 
     def test(self, batch_features, batch_labels):
         super().test(batch_features, batch_labels)
