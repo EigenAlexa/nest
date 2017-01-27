@@ -109,8 +109,9 @@ class NNModel(Model):
         super().train_batch(None, None)
 
         processed_convs = self.get_convpairs()
-        # self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
+        #self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
         #                        workers=self.workers)
+        self.doc2vec.build_vocab(processed_convs, trim_rule=None)
         self.doc2vec.train(processed_convs)
         self.vecs = self.doc2vec.docvecs
         print(self.vecs)
@@ -131,7 +132,7 @@ class NNModel(Model):
     def load(self):
         super().load()
 
-        self.doc2vec.load(self.save_file)
+        self.doc2vec = Doc2Vec.load(self.save_file)
         self.setup_nn()
 
     def construct(self):
