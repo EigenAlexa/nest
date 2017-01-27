@@ -7,10 +7,10 @@ class NNData(DataSource):
         """ source is mongo db ip"""
         super().__init__(source, is_local)
         self.client = MongoClient(source)
-        self.gen = self.client['ubuntu-corpus'].dialogs.find()
 
     def get_batch(self, batch_size=None):
         super().get_batch(batch_size)
+        self.gen = self.client['ubuntu-corpus'].dialogs.find().limit(1000)
         for next_elm in self.gen:
             personA = next_elm['A']
             id = next_elm['_id']
@@ -24,4 +24,3 @@ class NNData(DataSource):
         return personB
     def get_convpair(self, idx):
         return self.client['ubuntu-corpus'].dialogs.find({'_id' : bson.objectid.ObjectId(idx)}).next()
-    def get_ids(self):
