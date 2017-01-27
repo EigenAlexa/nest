@@ -46,10 +46,14 @@ def main():
                     source=data,
                     store_sentences=False,
                     hyperparameters=hyperparams)
-    print("Train model")
-    model.train(conv_pairs=data)
-    print("Saving model")
-    model.save()
+    load_from_file = input("Would you like to load from file?y/n ")
+    if load_from_file == 'y':
+        model.load()
+    else: 
+        print("Train model")
+        model.train()
+        print("Saving model")
+        model.save()
     print("START TESTING")
     print("'Hi I'm Eigen. Let's talk'")
     while True:

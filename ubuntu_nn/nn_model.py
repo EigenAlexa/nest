@@ -14,9 +14,9 @@ def hyperdefault(name, default, hyper_dict):
     if name not in hyper_dict:
         hyper_dict[name] = default
     return hyper_dict[name]
-def make_doc_tuple(conv_pair, i):
+def make_doc_tuple(personA, i):
     analyzedDocument = namedtuple("AnalyzedDocument", "words tags")
-    words = conv_pair['A'].lower().split()
+    words = personA.lower().split()
     tags = [i]
     return analyzedDocument(words, tags)
 def prepare_convpairs(conv_gen, start_i=0):
@@ -63,10 +63,9 @@ class NNModel(Model):
         """ Sets up nearest neighbors """
         # TODO add bits of entropy as hyperparameters
         print("Setup NN")
-        rbp = RandomBinaryProjections('rbp', 10)
+        rbp = RandomBinaryProjections('rbp', 9)
         self.nn_engine = Engine(self.dimension, lshashes=[rbp])
-
-        for _, idx in self.source.get_batch:
+        for _, idx in self.source.get_batch():
             vec = self._get_vector(idx)
             self.nn_engine.store_vector(vec, {'id': idx})
 
@@ -99,14 +98,17 @@ class NNModel(Model):
     def get_data_response(self, id):
         """ Returns the response to the conversation """
         return self.source.get_response(id)
-    def get_response(self, prev):
+    def get_response(self, prev): 
+        self.nn_engine.fetch_vector_filters = None
         vec = self._make_vector(prev)
         neighbors = self._get_neighbors(vec)
+        neighbors = sorted(neighbors, key=lambda x: x[2])
+        print(neighbors)
         if neighbors:
             res =  get_nearpy_id(neighbors[0][1])
         else:
             res = "588a865fc280444b37064f11"
-        return self.get_data_response(id)
+        return self.get_data_response(res)
 
     def train(self):
         super().train_batch(None, None)
@@ -115,6 +117,7 @@ class NNModel(Model):
         self.doc2vec = Doc2Vec(documents=processed_convs, size=self.dimension, window=self.window, min_count=self.min_count,
                                workers=self.workers)
         self.vecs = self.doc2vec.docvecs
+        print(self.vecs)
         self.setup_nn()
 
     def get_convpairs(self):
@@ -131,6 +134,7 @@ class NNModel(Model):
 
     def load(self):
         super().load()
+        self.setup_nn()
         self.doc2vec.load(os.path.join(self.save_dir, 'doc2vec.bin'))
 
     def construct(self):
