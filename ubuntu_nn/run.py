@@ -58,7 +58,7 @@ def main():
     print("'Hi I'm Eigen. Let's talk'")
     while True:
         user_response = input()
-        model_response = model.get_response(user_response)
+        model_response = model.get_response(user_response.lower())
         print(model_response)
 if __name__ == "__main__":
     main()

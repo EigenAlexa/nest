@@ -10,7 +10,7 @@ class NNData(DataSource):
 
     def get_batch(self, batch_size=None):
         super().get_batch(batch_size)
-        self.gen = self.client['ubuntu-corpus'].dialogs.find().limit(1000)
+        self.gen = self.client['ubuntu-corpus'].dialogs.find()
         for next_elm in self.gen:
             personA = next_elm['A']
             id = next_elm['_id']

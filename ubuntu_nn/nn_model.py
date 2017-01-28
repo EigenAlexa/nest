@@ -1,10 +1,14 @@
 from model import Model
 from gensim.models.doc2vec import Doc2Vec
+from gensim.models.doc2vec import LabeledSentence
 import os
 from collections import namedtuple
 from nearpy import Engine
 from nearpy.hashes import RandomBinaryProjections
 import json
+import pickle
+import xxhash
+import numpy as np
 
 def hyperdefault(name, default, hyper_dict):
     """
@@ -15,10 +19,9 @@ def hyperdefault(name, default, hyper_dict):
         hyper_dict[name] = default
     return hyper_dict[name]
 def make_doc_tuple(personA, i):
-    analyzedDocument = namedtuple("AnalyzedDocument", "words tags")
     words = personA.lower().split()
-    tags = [i]
-    return analyzedDocument(words, tags)
+    tags = (i,)
+    return LabeledSentence(words, tags)
 def prepare_convpairs(conv_gen, start_i=0):
     """
     Returns a generator that creates a doc tuple
@@ -46,8 +49,10 @@ class NNModel(Model):
         super().__init__(sess, hyperparameters, save_dir)
         self.store_sentences = store_sentences
         self.source = source
-        self.save_file = os.path.join(self.save_dir, 'doc2vec.bin')
+        self.doc2vec_save_file = os.path.join(self.save_dir, 'doc2vec.bin')
+        self.nn_save_file = os.path.join(self.save_dir, 'nn_engine.pkl')
         self.construct()
+        self.h = xxhash.xxh64()
     def setup_doc2vec(self):
         """
         Sets up the doc2vec embedding using the conv_pairs and the set hyperparameters
@@ -59,18 +64,23 @@ class NNModel(Model):
         self.min_count = hyperdefault("min_count", 1, self.hyperparameters)
         self.workers = hyperdefault("workers", 4, self.hyperparameters)
         self.vecs = None
-        self.doc2vec = Doc2Vec(size=self.dimension, window=self.window, min_count=self.min_count,
-                               workers=self.workers)
+        self.doc2vec = Doc2Vec(size=self.dimension, seed=42, window=self.window, min_count=self.min_count,
+                               workers=self.workers, iter = 20)
+        self.vecstore = []
+        self.ids = []
 
     def setup_nn(self):
         """ Sets up nearest neighbors """
         # TODO add bits of entropy as hyperparameters
         print("Setup NN")
-        rbp = RandomBinaryProjections('rbp', 9)
+        rbp = RandomBinaryProjections('rbp', 5)
         self.nn_engine = Engine(self.dimension, lshashes=[rbp])
-        for _, idx in self.source.get_batch():
+        for string, idx in self.source.get_batch():
             vec = self._get_vector(idx)
-            self.nn_engine.store_vector(vec, {'id': idx})
+         #   self.nn_engine.store_vector(vec, {'id': idx})
+             
+            self.vecstore.append(self._make_vector(string.lower()))
+            self.ids.append(idx)
 
     def _get_neighbors(self, vec):
         return self.nn_engine.neighbours(vec)
@@ -101,16 +111,30 @@ class NNModel(Model):
     def get_data_response(self, id):
         """ Returns the response to the conversation """
         return self.source.get_response(id)
+    def get_nearest_neighbor(self, vec):
+        dists = list(map(lambda x: (x - vec)**2, self.vecstore))
+        print(np.sum(np.array(dists[0])))
+        mindist = np.argmin(np.sum(dists, axis=1))
+        
+        print(np.sum(dists[mindist]))
+        print(np.sum(self.vecstore[0]), np.sum(vec))
+        print(np.sum(self._make_vector(" Colonel Durnford... William Vereker. I hear you 've been seeking Officers?".lower())), np.sum(self._make_vector(" Colonel Durnford... William Vereker. I hear you 've been seeking Officers?".lower())))
+        return self.vecstore[mindist], self.ids[mindist]
     def get_response(self, prev): 
         self.nn_engine.fetch_vector_filters = None
         vec = self._make_vector(prev)
-        neighbors = self._get_neighbors(vec)
-        neighbors = sorted(neighbors, key=lambda x: x[2])
+        #most_sim = self.doc2vec.most_similar([vec])
+        #print(most_sim)
+        #vec = self.doc2vec[sorted(most_sim, key=lambda x: x[1])[0][0]]
+        #print(vec)
+        #neighbors = self._get_neighbors(vec)
+        #neighbors = sorted(neighbors, key=lambda x: x[2])
+        neighbors, res = self.get_nearest_neighbor(vec)
         print(neighbors)
-        if neighbors:
-            res =  get_nearpy_id(neighbors[0][1])
-        else:
-            res = "588a865fc280444b37064f11"
+        #if neighbors:
+        #    res = get_nearpy_id(neighbors[0][1])
+        #else:
+            #res = "588a865fc280444b37064f11"
         return self.get_data_response(res)
 
     def train(self):
@@ -134,20 +158,22 @@ class NNModel(Model):
     def save(self):
         """ Saves the doc2vec embedding """
         super().save()
-        self.doc2vec.save(self.save_file)
-
+        self.doc2vec.save(self.doc2vec_save_file)
+        with open(self.nn_save_file, 'wb') as f:
+            pickle.dump(self.nn_engine, f)
 
     def load(self):
         super().load()
-
-        self.doc2vec = Doc2Vec.load(self.save_file)
+        self.doc2vec = Doc2Vec.load(self.doc2vec_save_file)
+        with open(self.nn_save_file, 'rb') as f:
+            self.nn_engine = pickle.load(f)
         self.setup_nn()
 
     def construct(self):
         super().construct()
         self.setup_doc2vec()
         # TODO test later
-        # if os.path.isfile(self.save_file):
+        # if os.path.isfile(self.doc2vec_save_file):
         #     self.load()
 
     def test(self, batch_features, batch_labels):
