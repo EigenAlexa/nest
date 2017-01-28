@@ -9,15 +9,8 @@ import json
 import pickle
 import xxhash
 import numpy as np
+from utils import hyperdefault
 
-def hyperdefault(name, default, hyper_dict):
-    """
-    Handles the default assignment of parameters that may or may
-    not appear in the hyperparameter dict. Adds them to the hyperparameter dict
-    """
-    if name not in hyper_dict:
-        hyper_dict[name] = default
-    return hyper_dict[name]
 def make_doc_tuple(personA, i):
     words = personA.lower().split()
     tags = (i,)
@@ -49,20 +42,19 @@ class NNModel(Model):
         super().__init__(sess, hyperparameters, save_dir)
         self.store_sentences = store_sentences
         self.source = source
-        self.doc2vec_save_file = os.path.join(self.save_dir, 'doc2vec.bin')
-        self.nn_save_file = os.path.join(self.save_dir, 'nn_engine.pkl')
+        self.save_file = os.path.join(self.save_dir, 'doc2vec.bin')
+        self.setup_hyperparameters()
         self.construct()
-        self.h = xxhash.xxh64()
-    def setup_doc2vec(self):
-        """
-        Sets up the doc2vec embedding using the conv_pairs and the set hyperparameters
-        :param conv_pairs: A list of tuples corresponding to a conversation pair
-        :param hyperparameters: Hyperparameters of the model
-        """
+    def setup_hyperparameters(self):
         self.dimension = hyperdefault("dimension", 100, self.hyperparameters)
         self.window = hyperdefault("window", 300, self.hyperparameters)
         self.min_count = hyperdefault("min_count", 1, self.hyperparameters)
         self.workers = hyperdefault("workers", 4, self.hyperparameters)
+        self.lsh_projections = hyperdefault('lsh_projections', 9, self.hyperparameters)
+    def setup_doc2vec(self):
+        """
+        Sets up the doc2vec embedding using the conv_pairs and the set hyperparameters
+        """
         self.vecs = None
         self.doc2vec = Doc2Vec(size=self.dimension, seed=42, window=self.window, min_count=self.min_count,
                                workers=self.workers, iter = 20)
@@ -73,7 +65,7 @@ class NNModel(Model):
         """ Sets up nearest neighbors """
         # TODO add bits of entropy as hyperparameters
         print("Setup NN")
-        rbp = RandomBinaryProjections('rbp', 5)
+        rbp = RandomBinaryProjections('rbp', self.lsh_projections)
         self.nn_engine = Engine(self.dimension, lshashes=[rbp])
         for string, idx in self.source.get_batch():
             vec = self._get_vector(idx)
