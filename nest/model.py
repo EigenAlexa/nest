@@ -101,7 +101,7 @@ class Model(metaclass=ABCMeta):
         # TODO add support for spec
         checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
-        print("Looking for checkpoint file in: ", checkpoint_dir)
+        print("Looking for checkpoint file in: ", self.checkpoint_dir)
         print("Loading checkpoint from ", checkpoint_file)
         if self.sess:
             if ckpt and ckpt.model_checkpoint_path:
