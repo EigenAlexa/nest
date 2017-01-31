@@ -38,6 +38,7 @@ class Model(metaclass=ABCMeta):
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver(max_to_keep=20)
         self.model_name = "model"
+        print("Testing develop")
         # copying so that there are no issues with mutable hyperparameters
         self.hyperparameters = hyperparameters.copy()
         self._get_id()
@@ -91,16 +92,17 @@ class Model(metaclass=ABCMeta):
     def save(self):
         """ Saves the current model """
         checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
-        ckpt = tf.train.get_checkpoint_state(checkpoint_file)
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
         if self.sess:
             print("Saving checkpoint to ", checkpoint_file)
-            self.saver.save(self.sess, str(checkpoint_file) + '.ckpt',global_step = self.global_step)
+            self.saver.save(tf., str(checkpoint_file),global_step = self.global_step)
             self.sess
     def load(self):
         """ Loads the model """
         # TODO add support for spec
         checkpoint_file = os.path.join(self.checkpoint_dir, self.model_name)
-        ckpt = tf.train.get_checkpoint_state(checkpoint_file)
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        print("Looking for checkpoint file in: ", checkpoint_dir)
         print("Loading checkpoint from ", checkpoint_file)
         if self.sess:
             if ckpt and ckpt.model_checkpoint_path:
