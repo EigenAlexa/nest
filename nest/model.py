@@ -95,8 +95,7 @@ class Model(metaclass=ABCMeta):
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
         if self.sess:
             print("Saving checkpoint to ", checkpoint_file)
-            self.saver.save(tf., str(checkpoint_file),global_step = self.global_step)
-            self.sess
+            self.saver.save(sess, str(checkpoint_file),global_step = self.global_step)
     def load(self):
         """ Loads the model """
         # TODO add support for spec
