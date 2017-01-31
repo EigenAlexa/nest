@@ -1,6 +1,6 @@
-from evaluator import Evaluator
-from model import DataSetType
-from mnist_datasource import MNISTDataSource
+from nest.evaluator import Evaluator
+from nest.model import DataSetType
+from nest.mnist.mnist_datasource import MNISTDataSource
 
 class MNISTEvaluator(Evaluator):
 

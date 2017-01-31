@@ -1,4 +1,4 @@
-from hyperqueue import HyperQueue
+from nest.hyperqueue import HyperQueue
 
 class MNISTHyperQueue(HyperQueue):
     """

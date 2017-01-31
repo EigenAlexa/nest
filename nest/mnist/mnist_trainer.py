@@ -1,5 +1,5 @@
-from trainer import Trainer
-from mnist_hyperqueue import MNISTHyperQueue
+from nest.trainer import Trainer
+from nest.mnist.mnist_hyperqueue import MNISTHyperQueue
 import tensorflow as tf
 class MNISTTrainer(Trainer):
     """

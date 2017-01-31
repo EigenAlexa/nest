@@ -1,6 +1,6 @@
 import tensorflow as tf
-from datasource import DataSource
-from model import DataSetType
+from nest.datasource import DataSource
+from nest.model import DataSetType
 from tensorflow.examples.tutorials.mnist import input_data
 
 class MNISTDataSource(DataSource):

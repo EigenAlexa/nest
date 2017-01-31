@@ -1,10 +1,10 @@
 import tensorflow as tf
-from model_store import ModelStore
-from mnist_evaluator import MNISTEvaluator
-from mnist_softmax import MNISTSoftmax
-from mnist_trainer import MNISTTrainer
-from mnist_hyperqueue import MNISTHyperQueue
-from mnist_datasource import MNISTDataSource
+from nest.model_store import ModelStore
+from nest.mnist.mnist_evaluator import MNISTEvaluator
+from nest.mnist.mnist_softmax import MNISTSoftmax
+from nest.mnist.mnist_trainer import MNISTTrainer
+from nest.mnist.mnist_hyperqueue import MNISTHyperQueue
+from nest.mnist.mnist_datasource import MNISTDataSource
 
 def main(_):
     print('Loading Model Store')

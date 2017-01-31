@@ -6,7 +6,7 @@ http://tensorflow.org/tutorials/mnist/beginners/index.md
 
 import tensorflow as tf
 
-from model import Model
+from nest.model import Model
 
 flags = tf.app.flags
 
