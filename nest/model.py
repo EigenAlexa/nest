@@ -38,7 +38,8 @@ class Model(metaclass=ABCMeta):
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver(max_to_keep=20)
         self.model_name = "model"
-        self.hyperparameters = hyperparameters
+        # copying so that there are no issues with mutable hyperparameters
+        self.hyperparameters = hyperparameters.copy()
         self._get_id()
         # TODO update num_epochs on iterations
         self.num_epochs = 0
