@@ -1,0 +1,11 @@
+---
+- name: Print
+  hosts: dockerhost
+  tasks:
+    - name: Echo
+      shell: "echo 'please let this work'"
+      register: e
+    - debug: var=e
+  roles:
+    - dockertest
+
